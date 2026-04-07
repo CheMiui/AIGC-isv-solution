@@ -1,6 +1,6 @@
 # AI 漫剧赛道 ISV 交互式作品集
 
-🌐 **[在线预览 (Live Demo)](https://chemiui.github.io/portfolio_Michelle/)** （请替换为实际链接）
+🌐 **[在线预览 (Live Demo)](https://chemiui.github.io/AIGC-isv-solution/)** 
 
 ## 📖 项目简介
 本项目包含两个层面的交付成果：
