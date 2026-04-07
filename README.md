@@ -1,4 +1,4 @@
-# AI 漫剧赛道 ISV 渠道合作方案实战复盘 (含交互式作品集源码)
+# AI 漫剧赛道 ISV 交互式作品集
 
 🌐 **[在线预览 (Live Demo)](https://chemiui.github.io/portfolio_Michelle/)** （请替换为实际链接）
 
