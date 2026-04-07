@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISV Channel Solution — SA Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── DESIGN TOKENS ───────────────────────────────────────── */
+:root {
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-sans:  'DM Sans', -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+
+  /* fuelgauge.dev warm palette */
+  --orange:     #E8520A;
+  --orange-lt:  #F97316;
+  --orange-dim: rgba(232,82,10,.1);
+  --orange-dim2:rgba(232,82,10,.06);
+
+  --blue:       #2563EB;
+  --blue-dim:   rgba(37,99,235,.1);
+  --teal:       #0D9488;
+  --teal-dim:   rgba(13,148,136,.1);
+  --amber:      #D97706;
+  --amber-dim:  rgba(217,119,6,.1);
+  --red:        #DC2626;
+  --red-dim:    rgba(220,38,38,.1);
+  --green:      #16A34A;
+  --green-dim:  rgba(22,163,74,.1);
+  --purple:     #7C3AED;
+  --purple-dim: rgba(124,58,237,.1);
+}
+[data-theme="light"] {
+  --bg:       #FAF8F4;
+  --bg2:      #FFFCF7;
+  --bg3:      #F2EFE8;
+  --surface:  #EDE9E0;
+  --border:   rgba(0,0,0,.08);
+  --border2:  rgba(0,0,0,.13);
+  --text:     #1A1816;
+  --text2:    #5C5752;
+  --text3:    #9A9590;
+  --nav-bg:   rgba(250,248,244,.92);
+  --shadow:   0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-md:0 4px 24px rgba(0,0,0,.08);
+}
+[data-theme="dark"] {
+  --bg:       #100F0D;
+  --bg2:      #171614;
+  --bg3:      #1E1C1A;
+  --surface:  #252320;
+  --border:   rgba(255,255,255,.08);
+  --border2:  rgba(255,255,255,.14);
+  --text:     #F0EDE8;
+  --text2:    #A09890;
+  --text3:    #5A5550;
+  --nav-bg:   rgba(16,15,13,.92);
+  --shadow:   0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow-md:0 4px 24px rgba(0,0,0,.4);
+}
+
+/* ── RESET ───────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;font-size:16px;transition:background .3s,color .3s;}
+a{color:inherit;text-decoration:none;}
+
+/* ── LANG/ZH-EN ──────────────────────────────────────────── */
+.zh,.en{display:none;}
+[data-lang="zh"] .zh{display:inline;}[data-lang="en"] .en{display:inline;}
+[data-lang="zh"] span.zh,[data-lang="zh"] div.zh,[data-lang="zh"] p.zh{display:block;}
+[data-lang="en"] span.en,[data-lang="en"] div.en,[data-lang="en"] p.en{display:block;}
+
+/* ── NAV ─────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:58px;background:var(--nav-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);transition:background .3s;}
+.nav-logo{font-family:var(--font-mono);font-size:12px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.nav-logo span{color:var(--orange);}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{font-size:13px;color:var(--text3);transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-right{display:flex;gap:8px;}
+.btn-icon{width:30px;height:30px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--font-mono);display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;}
+.btn-icon:hover{background:var(--surface);color:var(--text);}
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+section{max-width:920px;margin:0 auto;padding:96px 40px;}
+.divider{max-width:920px;margin:0 auto;height:1px;background:var(--border);}
+.section-label{font-family:var(--font-mono);font-size:10.5px;font-weight:500;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px;}
+section h2{font-family:var(--font-serif);font-size:clamp(34px,4.5vw,52px);line-height:1.1;color:var(--text);margin-bottom:20px;font-weight:400;}
+section h2 em{font-style:italic;color:var(--orange);}
+.section-desc{font-size:16px;color:var(--text2);line-height:1.75;max-width:580px;margin-bottom:52px;}
+.tag{font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border2);color:var(--text2);background:var(--surface);}
+.tag-orange{color:var(--orange);border-color:rgba(232,82,10,.3);background:var(--orange-dim);}
+.tag-blue{color:var(--blue);border-color:rgba(37,99,235,.3);background:var(--blue-dim);}
+
+/* ── BTNS ────────────────────────────────────────────────── */
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:8px;background:var(--orange);color:#fff;font-size:14px;font-weight:500;transition:opacity .2s;}
+.btn-primary:hover{opacity:.88;}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;padding:10px 21px;border-radius:8px;border:1px solid var(--border2);color:var(--text);font-size:14px;transition:background .2s;}
+.btn-outline:hover{background:var(--surface);}
+
+/* ── HERO ────────────────────────────────────────────────── */
+#hero{padding-top:136px;padding-bottom:80px;position:relative;overflow:hidden;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse 80% 55% at 50% 50%,black,transparent);pointer-events:none;}
+.hero-glow{position:absolute;top:-80px;right:-60px;width:500px;height:500px;background:radial-gradient(circle,rgba(232,82,10,.08),transparent 65%);pointer-events:none;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:100px;border:1px solid var(--border2);background:var(--bg2);font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:28px;}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);flex-shrink:0;}
+h1.hero-title{font-family:var(--font-serif);font-size:clamp(44px,6.5vw,76px);line-height:1.02;color:var(--text);margin-bottom:24px;font-weight:400;}
+h1.hero-title em{font-style:italic;color:var(--orange);}
+.hero-sub{font-size:17px;color:var(--text2);line-height:1.75;max-width:540px;margin-bottom:36px;}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:64px;}
+
+/* Hero preview widget */
+.hero-visual{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-md);}
+.hero-visual-bar{display:flex;align-items:center;gap:6px;padding:11px 18px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#FF5F5F;}.dot-y{background:#FFBD2E;}.dot-g{background:#28CA41;}
+.hero-flow{padding:24px 28px;display:flex;flex-direction:column;gap:0;}
+.flow-row{display:flex;justify-content:center;}
+.flow-arrow-v{text-align:center;color:var(--text3);font-size:13px;padding:5px 0;}
+.flow-node{border:1px solid var(--border2);border-radius:8px;padding:11px 18px;background:var(--surface);text-align:center;flex:1;max-width:220px;}
+.flow-branch{display:flex;gap:10px;justify-content:center;}
+.flow-branch .flow-node{max-width:none;}
+.fn-label{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.fn-name{font-size:12.5px;font-weight:500;color:var(--text);}
+.fn-model{font-family:var(--font-mono);font-size:9.5px;color:var(--orange);margin-top:3px;}
+.flow-node.na{border-color:rgba(37,99,235,.3);}
+.flow-node.nb{border-color:rgba(232,82,10,.25);}
+.flow-node.nc{border-color:rgba(13,148,136,.25);}
+
+/* ── SNAPSHOT ─────────────────────────────────────────────── */
+#snapshot{padding-top:72px;padding-bottom:72px;}
+.snapshot-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg2);}
+.snap-cell{padding:22px 26px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.snap-cell:nth-child(3n){border-right:none;}
+.snap-cell:nth-last-child(-n+3):not(.span3){border-bottom:none;}
+.snap-cell.span3{grid-column:span 3;border-right:none;border-bottom:none;}
+.snap-key{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.snap-val{font-size:14px;font-weight:500;color:var(--text);line-height:1.45;}
+.snap-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+
+/* ── PROBLEM ──────────────────────────────────────────────── */
+.problem-layout{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;}
+.pain-list{list-style:none;display:flex;flex-direction:column;gap:18px;}
+.pain-item{display:flex;gap:14px;align-items:flex-start;}
+.pain-icon{width:26px;height:26px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:2px;}
+.pi-red{background:var(--red-dim);color:var(--red);}
+.pi-amber{background:var(--amber-dim);color:var(--amber);}
+.pi-blue{background:var(--blue-dim);color:var(--blue);}
+.pain-text{font-size:14px;color:var(--text2);line-height:1.7;}
+.pain-text strong{color:var(--text);font-weight:500;display:block;margin-bottom:3px;}
+.problem-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;}
+.problem-card.hl{border-color:rgba(232,82,10,.2);background:linear-gradient(135deg,var(--bg2),var(--orange-dim2));}
+.stat-row{display:flex;gap:12px;margin-top:22px;}
+.stat-box{flex:1;padding:16px 12px;background:var(--bg3);border-radius:8px;text-align:center;}
+.stat-num{font-family:var(--font-serif);font-size:30px;color:var(--text);line-height:1;font-weight:400;}
+.stat-unit{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;}
+
+/* ── ARCHITECTURE ─────────────────────────────────────────── */
+#architecture{padding-bottom:80px;}
+.arch-outer{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--bg2);box-shadow:var(--shadow);}
+.arch-header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.arch-hint{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.06em;}
+.arch-body{padding:28px 24px;position:relative;overflow:visible;}
+.arch-svg-wrap{width:100%;display:block;}
+
+/* SVG node states */
+.arch-node{cursor:pointer;}
+.arch-node .n-bg{transition:opacity .18s;}
+.arch-node:hover .n-bg{opacity:1 !important;}
+
+/* Tooltip — fixed so it never gets clipped by overflow */
+.arch-tooltip{position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px 22px;width:300px;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s;z-index:9999;box-shadow:0 8px 40px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.08);}
+.arch-tooltip.vis{opacity:1;transform:translateY(0);}
+.tt-badge{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.tt-title{font-family:var(--font-serif);font-size:16px;color:var(--text);margin-bottom:12px;font-weight:400;}
+.tt-divider{height:1px;background:var(--border);margin-bottom:11px;}
+.tt-lbl{font-family:var(--font-mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.tt-txt{font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+.tt-txt:last-child{margin-bottom:0;}
+
+/* Badge pills */
+.nb{font-family:var(--font-mono);font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;letter-spacing:.04em;}
+.nb-core{color:var(--orange);border:1px solid rgba(232,82,10,.3);background:var(--orange-dim);}
+.nb-value{color:var(--blue);border:1px solid rgba(37,99,235,.3);background:var(--blue-dim);}
+.nb-pending{color:var(--amber);border:1px solid rgba(217,119,6,.3);background:var(--amber-dim);}
+
+/* ── TIMELINE HORIZONTAL ──────────────────────────────────── */
+#timeline{padding-top:96px;padding-bottom:96px;}
+.tl-scroll-wrap{overflow-x:auto;padding-bottom:20px;margin:0 -40px;padding-left:40px;padding-right:40px;cursor:grab;}
+.tl-scroll-wrap:active{cursor:grabbing;}
+.tl-scroll-wrap::-webkit-scrollbar{height:4px;}
+.tl-scroll-wrap::-webkit-scrollbar-track{background:var(--bg3);border-radius:2px;}
+.tl-scroll-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.tl-track{display:flex;gap:0;min-width:max-content;position:relative;padding-top:32px;padding-bottom:8px;}
+/* horizontal line */
+.tl-track::before{content:'';position:absolute;left:0;right:0;top:48px;height:1px;background:linear-gradient(to right, transparent, var(--border2) 60px, var(--border2) calc(100% - 60px), transparent);}
+.tl-card{width:300px;flex-shrink:0;padding:0 20px;position:relative;}
+.tl-card:first-child{padding-left:0;}
+.tl-card:last-child{padding-right:0;margin-right:40px;}
+.tl-dot-wrap{display:flex;align-items:center;margin-bottom:22px;position:relative;z-index:1;}
+.tl-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:var(--bg);flex-shrink:0;transition:border-color .2s,background .2s;}
+.tl-card.active .tl-dot{border-color:var(--orange);background:var(--orange-dim);}
+.tl-connector{flex:1;height:1px;background:transparent;}
+.tl-phase{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.tl-title{font-family:var(--font-serif);font-size:20px;color:var(--text);margin-bottom:12px;font-weight:400;line-height:1.2;}
+.tl-body{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.tl-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.tl-list li{font-size:12.5px;color:var(--text2);padding-left:14px;position:relative;line-height:1.6;}
+.tl-list li::before{content:'—';position:absolute;left:0;color:var(--text3);}
+.tl-status{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9.5px;padding:3px 9px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;}
+.st-done{color:var(--green);border:1px solid rgba(22,163,74,.3);background:var(--green-dim);}
+.st-done::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);}
+.st-progress{color:var(--amber);border:1px solid rgba(217,119,6,.3);background:var(--amber-dim);}
+.st-progress::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--amber);}
+.tl-drag-hint{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:16px;display:flex;align-items:center;gap:6px;}
+.tl-drag-hint::before{content:'←→';letter-spacing:-.1em;}
+
+/* ── ROLE ─────────────────────────────────────────────────── */
+.contrib-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg2);margin-bottom:60px;}
+.contrib-row{display:grid;grid-template-columns:190px 1fr;transition:background .15s;}
+.contrib-row:hover{background:var(--bg3);}
+.contrib-row+.contrib-row{border-top:1px solid var(--border);}
+.contrib-key{padding:20px 22px;border-right:1px solid var(--border);}
+.contrib-key-num{font-family:var(--font-mono);font-size:9.5px;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.contrib-key-title{font-size:13.5px;font-weight:500;color:var(--text);}
+.contrib-key-en{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:2px;}
+.contrib-val{padding:20px 26px;font-size:13.5px;color:var(--text2);line-height:1.75;}
+.contrib-val strong{color:var(--text);font-weight:500;}
+
+/* Radar */
+.radar-block{display:grid;grid-template-columns:1fr 340px;gap:52px;align-items:start;}
+.radar-block-left h3{font-family:var(--font-serif);font-size:26px;font-weight:400;color:var(--text);margin-bottom:10px;}
+.radar-block-left p{font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:24px;}
+.radar-legend{display:flex;flex-direction:column;gap:9px;}
+.legend-row{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text2);cursor:pointer;padding:4px 6px;border-radius:5px;transition:background .15s;}
+.legend-row:hover{background:var(--bg3);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-row strong{color:var(--text);font-weight:500;}
+.radar-canvas-wrap{position:relative;}
+#radarCanvas{display:block;border-radius:10px;}
+/* Radar tooltip */
+.radar-tip{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;width:200px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20;box-shadow:var(--shadow-md);}
+.radar-tip.vis{opacity:1;}
+.radar-tip-name{font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.radar-tip-val{font-family:var(--font-mono);font-size:10px;color:var(--orange);margin-bottom:6px;}
+.radar-tip-desc{font-size:11.5px;color:var(--text2);line-height:1.6;}
+
+/* ── RESULTS ──────────────────────────────────────────────── */
+#results{}
+/* KPI bar */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);margin-bottom:48px;}
+.kpi-cell{background:var(--bg2);padding:28px 22px;transition:background .15s;}
+.kpi-cell:hover{background:var(--bg3);}
+.kpi-status{font-family:var(--font-mono);font-size:9.5px;font-weight:500;display:inline-flex;align-items:center;gap:5px;margin-bottom:14px;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;}
+.ks-done{color:var(--green);border:1px solid rgba(22,163,74,.3);background:var(--green-dim);}
+.ks-done::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);border-radius:50%;}
+.ks-pending{color:var(--amber);border:1px solid rgba(217,119,6,.3);background:var(--amber-dim);}
+.ks-pending::before{content:'';width:5px;height:5px;background:var(--amber);border-radius:50%;}
+.kpi-num{font-family:var(--font-serif);font-size:44px;color:var(--text);line-height:1;font-weight:400;margin-bottom:6px;}
+.kpi-num span{font-size:22px;}
+.kpi-label{font-size:12.5px;color:var(--text2);line-height:1.55;}
+/* Comparison table */
+.compare-table{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg2);}
+.compare-head{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg3);border-bottom:1px solid var(--border);}
+.ch-cell{padding:12px 20px;font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;}
+.ch-cell.hl{color:var(--orange);}
+.compare-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);transition:background .15s;}
+.compare-row:last-child{border-bottom:none;}
+.compare-row:hover{background:var(--bg3);}
+.cr-cell{padding:14px 20px;font-size:13.5px;color:var(--text2);line-height:1.55;}
+.cr-cell.metric{font-family:var(--font-mono);font-size:12px;color:var(--text3);font-weight:500;}
+.cr-cell.bad{color:var(--red);}
+.cr-cell.good{color:var(--green);font-weight:500;}
+
+/* ── RETRO ────────────────────────────────────────────────── */
+.retro-cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:56px;}
+.retro-col-h{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;}
+.retro-dot{width:8px;height:8px;border-radius:50%;}
+.retro-item{padding:16px 0;border-bottom:1px solid var(--border);}
+.retro-item:last-child{border-bottom:none;}
+.retro-item-title{font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:5px;}
+.retro-item-desc{font-size:12.5px;color:var(--text2);line-height:1.7;}
+.retro-improve{margin-top:8px;font-family:var(--font-mono);font-size:10.5px;color:var(--blue);display:flex;align-items:flex-start;gap:6px;}
+.retro-improve::before{content:'→';flex-shrink:0;}
+.learnings{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg2);}
+.learning-row{display:grid;grid-template-columns:180px 1fr;transition:background .15s;}
+.learning-row:hover{background:var(--bg3);}
+.learning-row+.learning-row{border-top:1px solid var(--border);}
+.learning-key{padding:22px;border-right:1px solid var(--border);}
+.learning-num{font-family:var(--font-mono);font-size:9.5px;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.learning-key-title{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.35;}
+.learning-val{padding:22px 26px;font-size:13.5px;color:var(--text2);line-height:1.75;}
+
+/* ── QUOTE ────────────────────────────────────────────────── */
+#quote-section{max-width:920px;margin:0 auto;padding:100px 40px;position:relative;}
+.quote-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:280px;background:radial-gradient(ellipse,rgba(232,82,10,.05),transparent 70%);pointer-events:none;}
+.quote-eyebrow{font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:20px;}
+.quote-mark{font-family:var(--font-serif);font-size:72px;color:var(--orange);opacity:.25;line-height:.7;display:block;margin-bottom:12px;font-weight:400;}
+.quote-text{font-family:var(--font-serif);font-size:clamp(20px,3vw,32px);line-height:1.45;color:var(--text);max-width:760px;font-weight:400;margin-bottom:24px;}
+.quote-text em{font-style:italic;color:var(--orange);}
+.quote-attr{font-family:var(--font-mono);font-size:10.5px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;}
+
+/* ── CONTACT ──────────────────────────────────────────────── */
+#contact{max-width:920px;margin:0 auto;padding:64px 40px 96px;}
+.contact-inner{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+.contact-left h3{font-family:var(--font-serif);font-size:32px;font-weight:400;color:var(--text);margin-bottom:10px;}
+.contact-left p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:28px;}
+.contact-links{display:flex;flex-direction:column;gap:10px;}
+.contact-link{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);font-size:13.5px;color:var(--text);transition:background .15s,border-color .15s;}
+.contact-link:hover{background:var(--surface);border-color:var(--border2);}
+.cl-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.contact-right{padding-top:4px;}
+.contact-tag-title{font-family:var(--font-mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+.contact-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+.contact-note{font-size:12.5px;color:var(--text3);line-height:1.7;padding:14px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);}
+
+/* ── FOOTER ───────────────────────────────────────────────── */
+footer{max-width:920px;margin:0 auto;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10.5px;color:var(--text3);}
+
+/* ── REVEAL ───────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1);}
+.reveal.in{opacity:1;transform:translateY(0);}
+.reveal.d1{transition-delay:.08s;}.reveal.d2{transition-delay:.16s;}.reveal.d3{transition-delay:.24s;}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media(max-width:760px){
+  nav{padding:0 20px;}section{padding:72px 24px;}
+  section h2{font-size:34px;}
+  .problem-layout,.retro-cols,.radar-block,.contact-inner{grid-template-columns:1fr;}
+  .snapshot-grid{grid-template-columns:1fr 1fr;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .contrib-row,.learning-row{grid-template-columns:1fr;}
+  .contrib-key,.learning-key{border-right:none;border-bottom:1px solid var(--border);}
+  .compare-head,.compare-row{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:6px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#hero">SA · <span>Case Study /</span></a>
+  <div class="nav-links">
+    <a href="#problem"><span class="zh">背景</span><span class="en">Context</span></a>
+    <a href="#architecture"><span class="zh">架构</span><span class="en">Arch</span></a>
+    <a href="#timeline"><span class="zh">推进</span><span class="en">Process</span></a>
+    <a href="#role"><span class="zh">贡献</span><span class="en">Role</span></a>
+    <a href="#results"><span class="zh">成果</span><span class="en">Results</span></a>
+    <a href="#retro"><span class="zh">复盘</span><span class="en">Retro</span></a>
+    <a href="#contact"><span class="zh">联系</span><span class="en">Contact</span></a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-icon" onclick="toggleLang()" id="lang-toggle">EN</button>
+    <button class="btn-icon" onclick="toggleTheme()" id="theme-toggle">☾</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><span class="badge-dot"></span><span class="zh">SA案例复盘 · 2026.02 · 深圳南山</span><span class="en">SA Case Study · Feb 2026 · Shenzhen</span></div>
+  <h1 class="hero-title"><span class="zh">AI漫剧 ISV<br/><em>渠道解决方案</em></span><span class="en">AI Drama ISV<br/><em>Channel Solution</em></span></h1>
+  <p class="hero-sub"><span class="zh">面向AI漫剧赛道技术集成商的多模型API聚合与分级账号体系设计。一次深圳线下拜访，一套完整的售前推进案例。</span><span class="en">Multi-model API aggregation and tiered account architecture for an AI drama ISV. One on-site visit, one complete presales case.</span></p>
+  <div class="hero-ctas">
+    <a href="#architecture" class="btn-primary"><span class="zh">查看方案架构</span><span class="en">View Architecture</span> ↓</a>
+    <a href="#role" class="btn-outline"><span class="zh">我的角色与贡献</span><span class="en">My Role</span></a>
+  </div>
+  <div class="hero-visual reveal">
+    <div class="hero-visual-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      <span style="margin-left:10px;font-family:var(--font-mono);font-size:10.5px;color:var(--text3)">isv-channel · architecture preview</span>
+    </div>
+    <div class="hero-flow">
+      <div class="flow-row"><div class="flow-node na" style="max-width:260px"><div class="fn-label"><span class="zh">客户层</span><span class="en">Client Layer</span></div><div class="fn-name"><span class="zh">AI漫剧平台 · 下游工作室</span><span class="en">AIGC Platform · Studios</span></div></div></div>
+      <div class="flow-arrow-v">↓</div>
+      <div class="flow-branch">
+        <div class="flow-node nb"><div class="fn-label"><span class="zh">核心</span><span class="en">Core</span></div><div class="fn-name"><span class="zh">多模型API聚合</span><span class="en">Multi-model API</span></div><div class="fn-model">Vidu · Kling · Gemini · DS</div></div>
+        <div class="flow-node nb"><div class="fn-label"><span class="zh">管控</span><span class="en">Control</span></div><div class="fn-name"><span class="zh">账号权限体系</span><span class="en">IAM System</span></div><div class="fn-model"><span class="zh">主账号 → 子账号 → Key</span><span class="en">Master → Sub → Key</span></div></div>
+        <div class="flow-node nc"><div class="fn-label"><span class="zh">增值</span><span class="en">Value+</span></div><div class="fn-name"><span class="zh">智能媒体处理</span><span class="en">Smart Media</span></div><div class="fn-model"><span class="zh">超清·转码·集锦</span><span class="en">Enhance·Recode·Clip</span></div></div>
+      </div>
+      <div class="flow-arrow-v">↓</div>
+      <div class="flow-row"><div class="flow-node" style="max-width:260px;border-color:rgba(22,163,74,.3)"><div class="fn-label">Outcome</div><div class="fn-name"><span class="zh">账号已开通 · 并发申请跟进中</span><span class="en">Account Live · Concurrency Pending</span></div><div class="fn-model" style="color:var(--green)">✓ Converted</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SNAPSHOT -->
+<section id="snapshot" style="padding-top:72px;padding-bottom:72px;">
+  <div class="section-label"><span class="zh">项目概览</span><span class="en">Project Snapshot</span></div>
+  <h2><span class="zh">一次拜访，<br/><em>一套方法论</em></span><span class="en">One visit,<br/><em>one methodology.</em></span></h2>
+  <div class="snapshot-grid reveal">
+    <div class="snap-cell"><div class="snap-key"><span class="zh">类型</span><span class="en">Type</span></div><div class="snap-val"><span class="zh">ISV渠道 · 售前方案</span><span class="en">ISV Channel · Presales</span></div></div>
+    <div class="snap-cell"><div class="snap-key"><span class="zh">时间</span><span class="en">Date</span></div><div class="snap-val">2026.02.04</div></div>
+    <div class="snap-cell"><div class="snap-key"><span class="zh">角色</span><span class="en">My Role</span></div><div class="snap-val"><span class="zh">SA实习生（唯一）</span><span class="en">SA Intern (Solo)</span></div></div>
+    <div class="snap-cell"><div class="snap-key"><span class="zh">地点</span><span class="en">Location</span></div><div class="snap-val"><span class="zh">深圳南山 · 线下</span><span class="en">Shenzhen · On-site</span></div></div>
+    <div class="snap-cell"><div class="snap-key"><span class="zh">客户类型</span><span class="en">Client</span></div><div class="snap-val"><span class="zh">AI漫剧 ISV / 渠道商</span><span class="en">AI Drama ISV / Reseller</span></div></div>
+    <div class="snap-cell"><div class="snap-key"><span class="zh">项目状态</span><span class="en">Status</span></div><div class="snap-val"><span class="zh">账号开通 · 并发申请推进中</span><span class="en">Account live · Concurrency pending</span></div></div>
+    <div class="snap-cell span3"><div class="snap-key"><span class="zh">方案标签</span><span class="en">Solution Tags</span></div><div class="snap-tags"><span class="tag tag-orange"><span class="zh">多模型API聚合</span><span class="en">Multi-model Aggregation</span></span><span class="tag tag-orange"><span class="zh">主/子账号IAM体系</span><span class="en">Master/Sub Account IAM</span></span><span class="tag tag-blue"><span class="zh">并发资源调度</span><span class="en">Concurrency Mgmt</span></span><span class="tag tag-blue"><span class="zh">渠道保护机制</span><span class="en">Channel Protection</span></span><span class="tag"><span class="zh">智能媒体增值</span><span class="en">Smart Media Value-add</span></span><span class="tag"><span class="zh">生态资源联动</span><span class="en">Ecosystem Integration</span></span></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="section-label"><span class="zh">背景与问题定义</span><span class="en">Context & Problem</span></div>
+  <h2><span class="zh">AIGC压缩了制作成本<br/>却没有解决<em>渠道接入</em></span><span class="en">AIGC slashed production cost<br/>but left <em>channel access</em> unsolved</span></h2>
+  <p class="section-desc"><span class="zh">单集成本从3–5万元降至2–3千元，周期从100天压缩至7天。效率跃升的背后，中小工作室的技术接入障碍和渠道商的商业焦虑仍未消除。</span><span class="en">Episode costs dropped from ¥30–50k to ¥2–3k; cycles from 100 days to 7. Behind the efficiency leap, access barriers for small studios and commercial anxiety for resellers remain unsolved.</span></p>
+  <div class="problem-layout reveal">
+    <div>
+      <ul class="pain-list">
+        <li class="pain-item"><span class="pain-icon pi-red">✗</span><div class="pain-text"><strong><span class="zh">下游用户无API调用能力</span><span class="en">Downstream studios can't call APIs</span></strong><span class="zh">大量中小创作工作室不具备直接对接模型API的技术能力，渠道中转是唯一路径。</span><span class="en">Most small studios can't integrate model APIs — channel intermediation is the only viable path.</span></div></li>
+        <li class="pain-item"><span class="pain-icon pi-amber">⚠</span><div class="pain-text"><strong><span class="zh">主体库并发限制导致平台卡顿</span><span class="en">Character library concurrency causes lag</span></strong><span class="zh">Vidu参考生功能对并发有严格限制，多用户同时使用时体验极差，是整个合作的关键技术卡点。</span><span class="en">Vidu's reference character library has strict concurrency limits — the critical technical bottleneck for the entire deal.</span></div></li>
+        <li class="pain-item"><span class="pain-icon pi-red">✗</span><div class="pain-text"><strong><span class="zh">担心原厂绕过渠道直接撬客</span><span class="en">Fear of vendor bypassing the channel</span></strong><span class="zh">已有模型原厂直接联系下游客户抢单的先例，渠道保护承诺是赢得信任的关键。</span><span class="en">Prior vendor bypass incidents created concrete concern — channel protection commitment was the key trust signal.</span></div></li>
+        <li class="pain-item"><span class="pain-icon pi-blue">◈</span><div class="pain-text"><strong><span class="zh">多账单管理效率低下</span><span class="en">Multi-client billing is inefficient</span></strong><span class="zh">为数百家下游工作室管理账单与权限，缺乏企业级账号体系支撑，管理成本极高。</span><span class="en">Managing billing and permissions for hundreds of downstream studios without enterprise-grade account infrastructure is prohibitively expensive.</span></div></li>
+      </ul>
+    </div>
+    <div>
+      <div class="problem-card hl">
+        <div class="section-label" style="margin-bottom:14px"><span class="zh">为什么方案能成立？</span><span class="en">Why the solution works</span></div>
+        <p style="font-size:13.5px;color:var(--text2);line-height:1.8;margin-bottom:20px"><span class="zh">这不是单点产品能解决的问题。渠道商需要的是：更低的批发价 + 企业级账号分发 + 高并发保障 + 不会被撬单的安全感。只有将四者打包为完整的渠道合作方案，迁移决策才能成立。</span><span class="en">No single product solves this. The reseller needs lower wholesale prices, enterprise account distribution, high-concurrency guarantees, and channel protection. Only packaging all four makes the migration decision viable.</span></p>
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-num">5折</div><div class="stat-unit"><span class="zh">代理折扣<br/>原厂最低8折</span><span class="en">Agency discount<br/>vs vendor min 8/10</span></div></div>
+          <div class="stat-box"><div class="stat-num">30<span style="font-size:16px">–50</span></div><div class="stat-unit"><span class="zh">专属并发<br/>申请目标</span><span class="en">Dedicated concurrency<br/>target</span></div></div>
+          <div class="stat-box"><div class="stat-num">100<span style="font-size:16px">%</span></div><div class="stat-unit"><span class="zh">渠道保护<br/>承诺机制</span><span class="en">Channel protection<br/>commitment</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-label"><span class="zh">方案架构</span><span class="en">Solution Architecture</span></div>
+  <h2><span class="zh">聚合 · 管控 · 赋能<br/><em>三层架构设计</em></span><span class="en">Aggregate · Control · Enable<br/><em>three-layer architecture</em></span></h2>
+  <p class="section-desc"><span class="zh">鼠标悬停任意节点，查看技术说明与业务价值。</span><span class="en">Hover any node to see the technical rationale and business value.</span></p>
+
+  <div class="arch-outer reveal">
+    <div class="arch-header">
+      <span style="font-size:13px;font-weight:500;color:var(--text)"><span class="zh">ISV渠道方案 · 完整架构</span><span class="en">ISV Channel Solution · Full Architecture</span></span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="nb nb-core"><span class="zh">方案核心</span><span class="en">Core</span></span>
+        <span class="nb nb-value"><span class="zh">增值能力</span><span class="en">Value-add</span></span>
+        <span class="nb nb-pending"><span class="zh">待落地</span><span class="en">Pending</span></span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:4px" class="arch-hint"><span class="zh">悬停探索</span><span class="en">hover to explore</span></span>
+      </div>
+    </div>
+    <div class="arch-body">
+      <div class="arch-svg-wrap">
+<svg id="arch-svg" width="100%" viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+    <path d="M1.5 2L8 5L1.5 8" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+  </marker>
+  <style>
+    .sf{font-family:'DM Sans',-apple-system,sans-serif;}
+    .sm{font-family:'JetBrains Mono',monospace;}
+    .t0{fill:#1A1816;}.t1{fill:#5C5752;}.t2{fill:#9A9590;}
+    .to{fill:#7A2C00;}.tb{fill:#1340A0;}.ta{fill:#6B3900;}.tg{fill:#0A5030;}
+    .ro{fill:rgba(232,82,10,.11);stroke:rgba(232,82,10,.5);stroke-width:1;}
+    .rb{fill:rgba(37,99,235,.1);stroke:rgba(37,99,235,.45);stroke-width:1;}
+    .rn{fill:rgba(0,0,0,.04);stroke:rgba(0,0,0,.14);stroke-width:.9;}
+    .ra{fill:rgba(217,119,6,.1);stroke:rgba(217,119,6,.45);stroke-width:1;}
+    .rg{fill:rgba(13,148,136,.1);stroke:rgba(13,148,136,.45);stroke-width:1;}
+    .ln{fill:none;stroke:rgba(0,0,0,.2);stroke-width:1.3;}
+    .ld{fill:none;stroke:rgba(0,0,0,.12);stroke-width:.9;stroke-dasharray:4 3;}
+    .div-line{stroke:rgba(0,0,0,.08);stroke-width:.8;stroke-dasharray:5 4;}
+    [data-theme="dark"] .t0{fill:#F0EDE8;}[data-theme="dark"] .t1{fill:#A09890;}[data-theme="dark"] .t2{fill:#5A5550;}
+    [data-theme="dark"] .to{fill:#FFB87A;}[data-theme="dark"] .tb{fill:#90BAFF;}[data-theme="dark"] .ta{fill:#FFD090;}[data-theme="dark"] .tg{fill:#70E8C0;}
+    [data-theme="dark"] .ro{fill:rgba(232,82,10,.18);stroke:rgba(232,82,10,.6);}
+    [data-theme="dark"] .rb{fill:rgba(37,99,235,.18);stroke:rgba(37,99,235,.55);}
+    [data-theme="dark"] .rn{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.18);}
+    [data-theme="dark"] .ra{fill:rgba(217,119,6,.18);stroke:rgba(217,119,6,.55);}
+    [data-theme="dark"] .rg{fill:rgba(13,148,136,.18);stroke:rgba(13,148,136,.55);}
+    [data-theme="dark"] .ln{stroke:rgba(255,255,255,.22);}
+    [data-theme="dark"] .ld{stroke:rgba(255,255,255,.12);}
+    [data-theme="dark"] .div-line{stroke:rgba(255,255,255,.1);}
+  </style>
+</defs>
+
+<!-- BAND BACKGROUNDS: Layer1 y0-158, Layer2 y158-340, Layer3 y340-480 -->
+<rect x="0" y="0"   width="960" height="158" fill="rgba(37,99,235,.025)"/>
+<rect x="0" y="158" width="960" height="182" fill="rgba(232,82,10,.018)"/>
+<rect x="0" y="340" width="960" height="180" fill="rgba(0,0,0,.012)"/>
+
+<line x1="0" y1="158" x2="960" y2="158" class="div-line"/>
+<line x1="0" y1="340" x2="960" y2="340" class="div-line"/>
+
+<!-- Layer labels -->
+<text x="18" y="18"  class="sf sm t2" font-size="8.5" letter-spacing="2">CLIENT LAYER</text>
+<text x="18" y="172" class="sf sm t2" font-size="8.5" letter-spacing="2">SOLUTION CORE</text>
+<text x="18" y="354" class="sf sm t2" font-size="8.5" letter-spacing="2">INFRASTRUCTURE</text>
+
+<!-- LAYER 1: 3 nodes, x:18 316 614, w:226, h:110, y:28 -->
+<g class="arch-node" data-key="platform">
+  <rect class="rb n-bg" x="18" y="28" width="226" height="110" rx="9" opacity=".75"/>
+  <text x="131" y="65" text-anchor="middle" class="sf tb" font-size="14" font-weight="600"><tspan class="zh">AI漫剧制作平台</tspan><tspan class="en">AIGC Drama Platform</tspan></text>
+  <text x="131" y="84" text-anchor="middle" class="sf sm tb" font-size="9"><tspan class="zh">AIGC Workflow Platform</tspan><tspan class="en">Self-built Platform</tspan></text>
+  <line x1="36" y1="96" x2="226" y2="96" class="ld"/>
+  <text x="131" y="116" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">剧本·分镜·视频生成·资产管理</tspan><tspan class="en">Script·Storyboard·Video·Assets</tspan></text>
+</g>
+
+<g class="arch-node" data-key="studio">
+  <rect class="rn n-bg" x="316" y="28" width="226" height="110" rx="9" opacity=".75"/>
+  <text x="429" y="65" text-anchor="middle" class="sf t0" font-size="14" font-weight="600"><tspan class="zh">下游创作工作室</tspan><tspan class="en">Downstream Studios</tspan></text>
+  <text x="429" y="84" text-anchor="middle" class="sf sm t2" font-size="9">Downstream Studios</text>
+  <line x1="334" y1="96" x2="524" y2="96" class="ld"/>
+  <text x="429" y="116" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">3–4人小组·无API能力·依赖平台中转</tspan><tspan class="en">3-4 person team · no API capability</tspan></text>
+</g>
+
+<g class="arch-node" data-key="dist">
+  <rect class="rn n-bg" x="614" y="28" width="226" height="110" rx="9" opacity=".75"/>
+  <text x="727" y="65" text-anchor="middle" class="sf t0" font-size="14" font-weight="600"><tspan class="zh">内容分发渠道</tspan><tspan class="en">Content Distribution</tspan></text>
+  <text x="727" y="84" text-anchor="middle" class="sf sm t2" font-size="9">Distribution Channel</text>
+  <line x1="632" y1="96" x2="822" y2="96" class="ld"/>
+  <text x="727" y="116" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">短视频平台·内容平台·投流ROI</tspan><tspan class="en">Short video · Content platforms</tspan></text>
+</g>
+
+<!-- Arrows L1->L2 -->
+<line x1="131" y1="138" x2="131" y2="178" class="ln" marker-end="url(#arr)"/>
+<line x1="429" y1="138" x2="359" y2="178" class="ln" marker-end="url(#arr)"/>
+<line x1="429" y1="138" x2="601" y2="178" class="ln" marker-end="url(#arr)"/>
+<line x1="727" y1="138" x2="843" y2="178" class="ln" marker-end="url(#arr)"/>
+
+<!-- LAYER 2: 4 nodes, x:18 260 502 744, w:198, h:122, y:178 -->
+<g class="arch-node" data-key="api">
+  <rect class="ro n-bg" x="18" y="178" width="198" height="122" rx="9" opacity=".9"/>
+  <text x="117" y="208" text-anchor="middle" class="sf to" font-size="13.5" font-weight="600"><tspan class="zh">多模型 API 聚合</tspan><tspan class="en">Multi-model API Hub</tspan></text>
+  <text x="117" y="226" text-anchor="middle" class="sf sm to" font-size="8.5">Model Aggregator</text>
+  <line x1="36" y1="236" x2="198" y2="236" class="ld"/>
+  <text x="117" y="253" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">Vidu · 可灵 · 蒸汽机</tspan><tspan class="en">Vidu · Kling · Steamship</tspan></text>
+  <text x="117" y="269" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">Gemini · DeepSeek · 海螺</tspan><tspan class="en">Gemini · DeepSeek · Hailuo</tspan></text>
+  <text x="117" y="288" text-anchor="middle" class="sf to" font-size="10.5" font-weight="500"><tspan class="zh">5折代理 · 异步错峰</tspan><tspan class="en">5/10 price · Async mode</tspan></text>
+</g>
+
+<g class="arch-node" data-key="iam">
+  <rect class="ro n-bg" x="260" y="178" width="198" height="122" rx="9" opacity=".9"/>
+  <text x="359" y="208" text-anchor="middle" class="sf to" font-size="13.5" font-weight="600"><tspan class="zh">账号权限分发体系</tspan><tspan class="en">IAM &amp; Account System</tspan></text>
+  <text x="359" y="226" text-anchor="middle" class="sf sm to" font-size="8.5">Account Distribution</text>
+  <line x1="278" y1="236" x2="440" y2="236" class="ld"/>
+  <text x="359" y="253" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">主账号统一结算</tspan><tspan class="en">Master account billing</tspan></text>
+  <text x="359" y="269" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">子账号隔离 · API Key绑定</tspan><tspan class="en">Sub-account · API Key</tspan></text>
+  <text x="359" y="288" text-anchor="middle" class="sf to" font-size="10.5" font-weight="500"><tspan class="zh">认证继承 · 零门槛接入</tspan><tspan class="en">Auth inherit · Zero friction</tspan></text>
+</g>
+
+<g class="arch-node" data-key="concur">
+  <rect class="ra n-bg" x="502" y="178" width="198" height="122" rx="9" opacity=".9"/>
+  <text x="601" y="208" text-anchor="middle" class="sf ta" font-size="13.5" font-weight="600"><tspan class="zh">并发资源调度</tspan><tspan class="en">Concurrency Mgmt</tspan></text>
+  <text x="601" y="226" text-anchor="middle" class="sf sm ta" font-size="8.5">Concurrency Manager</text>
+  <line x1="520" y1="236" x2="682" y2="236" class="ld"/>
+  <text x="601" y="253" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">专属并发池 30–50</tspan><tspan class="en">Dedicated pool 30–50</tspan></text>
+  <text x="601" y="269" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">共享池 · 优先级队列</tspan><tspan class="en">Shared pool · Priority queue</tspan></text>
+  <text x="601" y="288" text-anchor="middle" class="sf ta" font-size="10.5" font-weight="600"><tspan class="zh">★ 合作关键卡点</tspan><tspan class="en">★ Key Blocker</tspan></text>
+</g>
+
+<g class="arch-node" data-key="media">
+  <rect class="rg n-bg" x="744" y="178" width="198" height="122" rx="9" opacity=".9"/>
+  <text x="843" y="208" text-anchor="middle" class="sf tg" font-size="13.5" font-weight="600"><tspan class="zh">智能媒体处理</tspan><tspan class="en">Smart Media Engine</tspan></text>
+  <text x="843" y="226" text-anchor="middle" class="sf sm tg" font-size="8.5">Media Processing</text>
+  <line x1="762" y1="236" x2="924" y2="236" class="ld"/>
+  <text x="843" y="253" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">智感超清 · 感知编码</tspan><tspan class="en">AI super-res · Perceptual encode</tspan></text>
+  <text x="843" y="269" text-anchor="middle" class="sf t1" font-size="11"><tspan class="zh">智能集锦 · 一键成片</tspan><tspan class="en">Smart highlights · Auto-edit</tspan></text>
+  <text x="843" y="288" text-anchor="middle" class="sf tg" font-size="10.5" font-weight="500"><tspan class="zh">↑ 投流ROI · 字幕水印</tspan><tspan class="en">↑ Ad ROI · Watermark</tspan></text>
+</g>
+
+<!-- Horizontal connectors L2 -->
+<line x1="216" y1="239" x2="260" y2="239" class="ld"/>
+<line x1="458" y1="239" x2="502" y2="239" class="ld"/>
+<line x1="700" y1="239" x2="744" y2="239" class="ld"/>
+
+<!-- Arrows L2->L3 -->
+<line x1="117" y1="300" x2="117" y2="358" class="ln" marker-end="url(#arr)"/>
+<line x1="359" y1="300" x2="380" y2="358" class="ln" marker-end="url(#arr)"/>
+<line x1="601" y1="300" x2="540" y2="358" class="ln" marker-end="url(#arr)"/>
+<line x1="843" y1="300" x2="792" y2="358" class="ln" marker-end="url(#arr)"/>
+
+<!-- LAYER 3: 3 nodes, x:18 339 660, w:264, h:82, y:358 -->
+<g class="arch-node" data-key="compute">
+  <rect class="rn n-bg" x="18" y="358" width="264" height="82" rx="9" opacity=".7"/>
+  <text x="150" y="390" text-anchor="middle" class="sf t0" font-size="13" font-weight="600"><tspan class="zh">云算力基础设施</tspan><tspan class="en">Compute Infrastructure</tspan></text>
+  <text x="150" y="410" text-anchor="middle" class="sf sm t2" font-size="9"><tspan class="zh">GPU推理 · ComfyUI · 中心云/边缘云</tspan><tspan class="en">GPU Inference · ComfyUI · Cloud/Edge</tspan></text>
+  <text x="150" y="428" text-anchor="middle" class="sf t1" font-size="10.5"><tspan class="zh">预置大模型 · 算力弹性伸缩</tspan><tspan class="en">Pretrained models · Elastic scaling</tspan></text>
+</g>
+
+<g class="arch-node" data-key="storage">
+  <rect class="rn n-bg" x="339" y="358" width="264" height="82" rx="9" opacity=".7"/>
+  <text x="471" y="390" text-anchor="middle" class="sf t0" font-size="13" font-weight="600"><tspan class="zh">媒体存储与分发</tspan><tspan class="en">Media Storage &amp; CDN</tspan></text>
+  <text x="471" y="410" text-anchor="middle" class="sf sm t2" font-size="9"><tspan class="zh">对象存储 · 智能降冷 · CDN全球加速</tspan><tspan class="en">Object Storage · Cold tier · CDN</tspan></text>
+  <text x="471" y="428" text-anchor="middle" class="sf t1" font-size="10.5"><tspan class="zh">感知编码降流量 · 分级存储降成本</tspan><tspan class="en">Perceptual encoding · Tiered storage</tspan></text>
+</g>
+
+<g class="arch-node" data-key="sec">
+  <rect class="rn n-bg" x="660" y="358" width="264" height="82" rx="9" opacity=".7"/>
+  <text x="792" y="390" text-anchor="middle" class="sf t0" font-size="13" font-weight="600"><tspan class="zh">安全合规体系</tspan><tspan class="en">Security &amp; Compliance</tspan></text>
+  <text x="792" y="410" text-anchor="middle" class="sf sm t2" font-size="9"><tspan class="zh">内容审核 · 数字水印 · 视频加密</tspan><tspan class="en">Content audit · Watermark · Encrypt</tspan></text>
+  <text x="792" y="428" text-anchor="middle" class="sf t1" font-size="10.5"><tspan class="zh">子账号连带风控 · 资金预警</tspan><tspan class="en">Sub-account risk · Fund alert</tspan></text>
+</g>
+
+<!-- LEGEND y:462 -->
+<rect x="18" y="462" width="924" height="28" rx="6" fill="rgba(0,0,0,.025)" stroke="rgba(0,0,0,.07)" stroke-width=".8"/>
+<text x="36" y="480" class="sf t1" font-size="11" font-weight="500"><tspan class="zh">图例：</tspan><tspan class="en">Legend:</tspan></text>
+<rect x="84" y="470" width="11" height="11" rx="2" class="ro"/><text x="101" y="480" class="sf t0" font-size="11"><tspan class="zh">方案核心</tspan><tspan class="en">Core</tspan></text>
+<rect x="190" y="470" width="11" height="11" rx="2" class="ra"/><text x="207" y="480" class="sf t0" font-size="11"><tspan class="zh">关键卡点</tspan><tspan class="en">Blocker</tspan></text>
+<rect x="300" y="470" width="11" height="11" rx="2" class="rg"/><text x="317" y="480" class="sf t0" font-size="11"><tspan class="zh">增值能力</tspan><tspan class="en">Value-add</tspan></text>
+<rect x="410" y="470" width="11" height="11" rx="2" class="rb"/><text x="427" y="480" class="sf t0" font-size="11"><tspan class="zh">客户侧</tspan><tspan class="en">Client</tspan></text>
+<rect x="500" y="470" width="11" height="11" rx="2" class="rn"/><text x="517" y="480" class="sf t0" font-size="11"><tspan class="zh">基础设施</tspan><tspan class="en">Infra</tspan></text>
+<text x="660" y="480" class="sf sm t2" font-size="9.5"><tspan class="zh">悬停节点查看详情</tspan><tspan class="en">Hover any node for details</tspan></text>
+</svg>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="arch-tooltip" id="arch-tooltip">
+        <div class="tt-badge" id="tt-badge"></div>
+        <div class="tt-title" id="tt-title"></div>
+        <div class="tt-divider"></div>
+        <div class="tt-lbl"><span class="zh">技术说明</span><span class="en">Technical</span></div>
+        <div class="tt-txt" id="tt-tech"></div>
+        <div class="tt-lbl"><span class="zh">业务价值</span><span class="en">Business Value</span></div>
+        <div class="tt-txt" id="tt-biz"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TIMELINE horizontal -->
+<section id="timeline">
+  <div class="section-label"><span class="zh">售前推进过程</span><span class="en">Presales Process</span></div>
+  <h2><span class="zh">从准备到落地<br/><em>四个推进阶段</em></span><span class="en">From prep to delivery<br/><em>four execution phases</em></span></h2>
+
+  <div class="tl-scroll-wrap reveal" id="tlScroll">
+    <div class="tl-track">
+
+      <div class="tl-card active">
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-connector"></div></div>
+        <div class="tl-phase">Phase 01 · Pre-Visit</div>
+        <div class="tl-title"><span class="zh">拜访前准备</span><span class="en">Pre-visit Preparation</span></div>
+        <div class="tl-body"><span class="zh">研究客户从阿里云代理转型AI漫剧赛道的背景，梳理其ISV属性与核心诉求，准备对应方案材料。</span><span class="en">Researched the client's transition from cloud reseller to AI drama ISV, mapped their core needs, prepared targeted solution materials.</span></div>
+        <ul class="tl-list">
+          <li><span class="zh">整理并携带AIGC一站式解决方案PPT</span><span class="en">Prepared AIGC solution deck</span></li>
+          <li><span class="zh">提前梳理子账号体系与ISV模式的适配逻辑</span><span class="en">Pre-mapped sub-account fit to ISV resale model</span></li>
+          <li><span class="zh">准备技术细节应答框架</span><span class="en">Built technical Q&A framework</span></li>
+        </ul>
+        <span class="tl-status st-done"><span class="zh">已完成</span><span class="en">Done</span></span>
+      </div>
+
+      <div class="tl-card active">
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-connector"></div></div>
+        <div class="tl-phase">Phase 02 · On-Site · 2026.02.04</div>
+        <div class="tl-title"><span class="zh">深圳线下拜访</span><span class="en">Shenzhen On-site</span></div>
+        <div class="tl-body"><span class="zh">全程参与三人团队的线下拜访，承担记录、技术细节补充与内部协调三重职能。</span><span class="en">Full participation in 3-person on-site visit — note-taking, technical clarification, and internal coordination.</span></div>
+        <ul class="tl-list">
+          <li><span class="zh">主动补充Vidu并发、API Key分发等技术细节</span><span class="en">Proactively clarified Vidu concurrency, API Key distribution</span></li>
+          <li><span class="zh">遇超范围问题即时协调产研答疑</span><span class="en">Coordinated R&D in real time for out-of-scope questions</span></li>
+          <li><span class="zh">聚焦三大议题：并发申请/账单体系/渠道保护</span><span class="en">Focused: concurrency / billing / channel protection</span></li>
+        </ul>
+        <span class="tl-status st-done"><span class="zh">已完成</span><span class="en">Done</span></span>
+      </div>
+
+      <div class="tl-card active">
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-connector"></div></div>
+        <div class="tl-phase">Phase 03 · Post-Visit</div>
+        <div class="tl-title"><span class="zh">会后文档输出</span><span class="en">Documentation</span></div>
+        <div class="tl-body"><span class="zh">独立完成两版会议纪要，并主动产出超出职责的客户深度分析文档。</span><span class="en">Independently authored two meeting summaries plus a proactive beyond-scope client deep-dive analysis.</span></div>
+        <ul class="tl-list">
+          <li><span class="zh">简版纪要（1页快速同步）</span><span class="en">Concise summary (1-page quick sync)</span></li>
+          <li><span class="zh">详版纪要（六章完整结构）</span><span class="en">Full version (6-section structure)</span></li>
+          <li><span class="zh">客户深度分析文档（客户画像+话术+汇报框架）</span><span class="en">Client analysis: persona + talking points + report template</span></li>
+        </ul>
+        <span class="tl-status st-done"><span class="zh">已完成</span><span class="en">Done</span></span>
+      </div>
+
+      <div class="tl-card">
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-connector"></div></div>
+        <div class="tl-phase">Phase 04 · Follow-up</div>
+        <div class="tl-title"><span class="zh">跟进与落地</span><span class="en">Follow-up</span></div>
+        <div class="tl-body"><span class="zh">会议结束后持续跟进三项关键To Do，推动合作从意向进入实质落地阶段。</span><span class="en">Followed up three key action items, moving the partnership from intent to substantive execution.</span></div>
+        <ul class="tl-list">
+          <li><span class="zh">发送账号邀请链接 · 客户已注册 ✓</span><span class="en">Sent account invite · Client registered ✓</span></li>
+          <li><span class="zh">整理发送多模型API对接文档 ✓</span><span class="en">Compiled and sent multi-model API docs ✓</span></li>
+          <li><span class="zh">Vidu高并发额度申请 · 推进中 ⟳</span><span class="en">Vidu high-concurrency request · Ongoing ⟳</span></li>
+        </ul>
+        <span class="tl-status st-progress"><span class="zh">部分进行中</span><span class="en">Partially ongoing</span></span>
+      </div>
+
+    </div>
+  </div>
+  <div class="tl-drag-hint"><span class="zh">左右滑动查看全部阶段</span><span class="en">Scroll to see all phases</span></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ROLE -->
+<section id="role">
+  <div class="section-label"><span class="zh">我的角色与贡献</span><span class="en">My Role & Contribution</span></div>
+  <h2><span class="zh">唯一实习生，<br/><em>全链条参与</em></span><span class="en">Solo intern,<br/><em>full-cycle involvement</em></span></h2>
+
+  <div class="contrib-list reveal">
+    <div class="contrib-row">
+      <div class="contrib-key"><div class="contrib-key-num">01</div><div class="contrib-key-title"><span class="zh">售前准备</span><span class="en">Pre-sales Prep</span></div><div class="contrib-key-en">Preparation</div></div>
+      <div class="contrib-val"><span class="zh">整理AIGC解决方案PPT，研究客户ISV属性，<strong>提前梳理子账号体系与渠道转售模式的适配逻辑</strong>，为拜访做好产品与方案准备。</span><span class="en">Organized the AIGC deck and researched the client's ISV profile, <strong>pre-mapping how sub-account architecture fits their resale model</strong> before the visit.</span></div>
+    </div>
+    <div class="contrib-row">
+      <div class="contrib-key"><div class="contrib-key-num">02</div><div class="contrib-key-title"><span class="zh">现场技术支撑</span><span class="en">On-site Support</span></div><div class="contrib-key-en">Technical Support</div></div>
+      <div class="contrib-val"><span class="zh">全程参与深圳线下拜访，<strong>负责记录与技术细节补充</strong>。遇到超出现场知识范围的问题，即时协调产研同事答疑，确保客户信息准确到位。</span><span class="en">Attended on-site, <strong>handling notes and technical clarifications</strong>. When questions exceeded on-site knowledge, coordinated R&D in real time to ensure accurate client information.</span></div>
+    </div>
+    <div class="contrib-row">
+      <div class="contrib-key"><div class="contrib-key-num">03</div><div class="contrib-key-title"><span class="zh">高质量文档</span><span class="en">Documentation</span></div><div class="contrib-key-en">Output Quality</div></div>
+      <div class="contrib-val"><span class="zh">独立完成<strong>两版会议纪要</strong>（简版+六章详版），跟进账号开通、API文档发送、Vidu并发申请三项关键To Do，全程有闭环意识。</span><span class="en">Independently wrote <strong>two meeting summaries</strong> (concise + full 6-section), followed up all three key action items with a complete-loop mindset.</span></div>
+    </div>
+    <div class="contrib-row">
+      <div class="contrib-key"><div class="contrib-key-num">04</div><div class="contrib-key-title"><span class="zh">自驱复盘分析</span><span class="en">Self-driven Analysis</span></div><div class="contrib-key-en">Beyond Scope</div></div>
+      <div class="contrib-val"><span class="zh">超出岗位要求，主动撰写<strong>客户深度分析文档</strong>，包含客户画像拆解、方案价值逻辑、三场景沟通话术、内部汇报框架——将隐性知识显性化，沉淀为可复用方法论。</span><span class="en">Beyond job scope, self-initiated a <strong>deep client analysis document</strong> — persona breakdown, solution rationale, 3-scenario talking points, internal reporting template. Converting tacit knowledge into reusable methodology.</span></div>
+    </div>
+  </div>
+
+  <!-- Radar with hover bubbles -->
+  <div class="radar-block reveal" style="margin-top:56px;">
+    <div class="radar-block-left">
+      <h3><span class="zh">能力模型</span><span class="en">Capability Model</span></h3>
+      <p><span class="zh">基于本项目实践提炼的SA核心能力自评。鼠标触达雷达图上每个能力点，查看项目中的具体体现。</span><span class="en">SA competencies assessed from this project. Hover any point on the radar to see how it's evidenced in this project.</span></p>
+      <div class="radar-legend" id="radarLegend">
+        <!-- filled by JS -->
+      </div>
+    </div>
+    <div class="radar-canvas-wrap">
+      <canvas id="radarCanvas" width="340" height="340"></canvas>
+      <div class="radar-tip" id="radarTip">
+        <div class="radar-tip-name" id="rtName"></div>
+        <div class="radar-tip-val" id="rtVal"></div>
+        <div class="radar-tip-desc" id="rtDesc"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="section-label"><span class="zh">项目成果</span><span class="en">Project Outcomes</span></div>
+  <h2><span class="zh">数据说话<br/><em>可量化的交付</em></span><span class="en">Numbers first,<br/><em>measurable delivery</em></span></h2>
+
+  <!-- KPI row -->
+  <div class="kpi-grid reveal">
+    <div class="kpi-cell">
+      <div class="kpi-status ks-done"><span class="zh">已完成</span><span class="en">Done</span></div>
+      <div class="kpi-num">1 <span><span class="zh">次</span><span class="en">visit</span></span></div>
+      <div class="kpi-label"><span class="zh">→ 账号完成注册<br/>完成渠道迁移转化</span><span class="en">→ Account registered<br/>Channel migration converted</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-status ks-done"><span class="zh">已完成</span><span class="en">Done</span></div>
+      <div class="kpi-num">3 <span><span class="zh">份</span><span class="en">docs</span></span></div>
+      <div class="kpi-label"><span class="zh">→ 2版会议纪要 + 1份深度分析<br/>全部独立完成，超出岗位要求</span><span class="en">→ 2 meeting summaries + 1 deep analysis<br/>All independently authored, beyond scope</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-status ks-done"><span class="zh">已完成</span><span class="en">Done</span></div>
+      <div class="kpi-num">3<span>/3</span></div>
+      <div class="kpi-label"><span class="zh">→ To Do 完成率 100%<br/>账号·API文档·并发申请全部跟进</span><span class="en">→ 100% action item follow-through<br/>Account · API docs · Concurrency request</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-status ks-pending"><span class="zh">推进中</span><span class="en">Ongoing</span></div>
+      <div class="kpi-num">30<span>–50</span></div>
+      <div class="kpi-label"><span class="zh">→ 目标并发额度（次/min）<br/>Vidu主体库专项申请已发起</span><span class="en">→ Target concurrency (req/min)<br/>Vidu character library request initiated</span></div>
+    </div>
+  </div>
+
+  <!-- Before / After comparison -->
+  <div class="compare-table reveal">
+    <div class="compare-head">
+      <div class="ch-cell"><span class="zh">对比维度</span><span class="en">Dimension</span></div>
+      <div class="ch-cell"><span class="zh">合作前（竞对渠道）</span><span class="en">Before (Competitor Channel)</span></div>
+      <div class="ch-cell hl"><span class="zh">合作后（当前方案）</span><span class="en">After (This Solution)</span></div>
+    </div>
+    <div class="compare-row">
+      <div class="cr-cell metric"><span class="zh">模型折扣</span><span class="en">Model Discount</span></div>
+      <div class="cr-cell bad"><span class="zh">最低 8折，需预充30万</span><span class="en">Min 8/10, ¥300k prepay required</span></div>
+      <div class="cr-cell good"><span class="zh">5折代理价，无门槛预充</span><span class="en">5/10 agency price, no minimum prepay</span></div>
+    </div>
+    <div class="compare-row">
+      <div class="cr-cell metric"><span class="zh">账号管理</span><span class="en">Account Mgmt</span></div>
+      <div class="cr-cell bad"><span class="zh">手动管理多账号，账单混乱</span><span class="en">Manual multi-account, messy billing</span></div>
+      <div class="cr-cell good"><span class="zh">主账号统一结算，子账号隔离</span><span class="en">Master account billing, sub-account isolation</span></div>
+    </div>
+    <div class="compare-row">
+      <div class="cr-cell metric"><span class="zh">渠道安全</span><span class="en">Channel Safety</span></div>
+      <div class="cr-cell bad"><span class="zh">原厂已有撬客先例，风险高</span><span class="en">Vendor bypass precedent, high risk</span></div>
+      <div class="cr-cell good"><span class="zh">客户报备机制 + 正式渠道保护承诺</span><span class="en">Client reservation + formal channel protection</span></div>
+    </div>
+    <div class="compare-row">
+      <div class="cr-cell metric"><span class="zh">模型覆盖</span><span class="en">Model Coverage</span></div>
+      <div class="cr-cell bad"><span class="zh">单一渠道，需逐家对接</span><span class="en">Single channel, vendor-by-vendor integration</span></div>
+      <div class="cr-cell good"><span class="zh">一个API接入：Vidu·可灵·Gemini·DeepSeek等</span><span class="en">Single API: Vidu · Kling · Gemini · DeepSeek+</span></div>
+    </div>
+    <div class="compare-row">
+      <div class="cr-cell metric"><span class="zh">下游准入门槛</span><span class="en">Onboarding Friction</span></div>
+      <div class="cr-cell bad"><span class="zh">下游工作室需独立企业认证</span><span class="en">Downstream studios need separate verification</span></div>
+      <div class="cr-cell good"><span class="zh">子账号继承主账号认证，零门槛</span><span class="en">Sub-accounts inherit master verification, zero friction</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RETRO -->
+<section id="retro">
+  <div class="section-label"><span class="zh">深度复盘</span><span class="en">Retrospective</span></div>
+  <h2><span class="zh">得与失，<br/><em>可迁移的方法论</em></span><span class="en">What worked, what didn't,<br/><em>transferable lessons</em></span></h2>
+
+  <div class="retro-cols reveal">
+    <div>
+      <div class="retro-col-h"><div class="retro-dot" style="background:var(--green)"></div><span class="zh">做得好</span><span class="en">What worked</span></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">信息整合与结构化输出</span><span class="en">Information synthesis & structured output</span></div><div class="retro-item-desc"><span class="zh">将大量口头信息转化为有层次的书面纪要，让未参与的同事也能快速掌握全貌，体现了信息传递效率和结构化思维。</span><span class="en">Converted dense verbal discussion into layered written summaries — non-attending colleagues could reconstruct the full picture.</span></div></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">超预期的自驱文档</span><span class="en">Beyond-scope self-driven documentation</span></div><div class="retro-item-desc"><span class="zh">在基本职责之外主动撰写客户深度分析文档，体现了对SA工作方式的主动理解与高度投入，而非仅完成交代的任务。</span><span class="en">The self-initiated client analysis demonstrated proactive understanding of SA methodology and engagement beyond assigned tasks.</span></div></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">技术概念的业务化翻译</span><span class="en">Translating technical concepts into business language</span></div><div class="retro-item-desc"><span class="zh">将「子账号体系」翻译成「帮你解决算账问题」，将「并发」翻译成「高速公路车道数」——让技术能力对客户产生真实共鸣。</span><span class="en">Translating "sub-account architecture" into "solves your billing problem" — making technical capabilities resonate concretely with clients.</span></div></div>
+    </div>
+    <div>
+      <div class="retro-col-h"><div class="retro-dot" style="background:var(--red)"></div><span class="zh">不足与改进</span><span class="en">What to improve</span></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">关键卡点推进效率不足</span><span class="en">Insufficient urgency on the critical blocker</span></div><div class="retro-item-desc"><span class="zh">Vidu并发申请是合作推进的核心前提，但实习结束时仍未落地，说明内部协调资源的动用和优先级判断还不够果断。</span><span class="en">The Vidu concurrency request was the deal prerequisite, yet remained unresolved at internship end — reflecting insufficient internal escalation urgency.</span></div><div class="retro-improve"><span class="zh">更早识别关键路径，找到真正能推动的决策节点</span><span class="en">Identify the critical path earlier; find the actual decision-maker</span></div></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">现场主动发言深度有限</span><span class="en">Limited proactive contribution on-site</span></div><div class="retro-item-desc"><span class="zh">大部分时间以旁听记录为主，在明显可以补充观点和引导讨论的时机未能及时切入。</span><span class="en">Spent most time listening and noting — missed opportunities to proactively add perspective at natural moments.</span></div><div class="retro-improve"><span class="zh">拜访前预设2–3个自己主动抛出的话题点</span><span class="en">Pre-set 2–3 angles to initiate proactively in the meeting</span></div></div>
+      <div class="retro-item"><div class="retro-item-title"><span class="zh">决策链覆盖不完整</span><span class="en">Incomplete stakeholder mapping</span></div><div class="retro-item-desc"><span class="zh">全程只接触了客户一位对接人，未探明内部是否有其他决策方，存在后续推进的盲区。</span><span class="en">Only engaged one client contact throughout — didn't probe for other internal stakeholders, creating blind spots.</span></div><div class="retro-improve"><span class="zh">拜访结束时主动询问后续技术对接还需要哪些同事参与</span><span class="en">Before leaving: ask who else should be involved in technical follow-up</span></div></div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:20px"><span class="zh">三条可迁移的方法论</span><span class="en">Three transferable lessons</span></div>
+  <div class="learnings reveal">
+    <div class="learning-row"><div class="learning-key"><div class="learning-num">Lesson 01</div><div class="learning-key-title"><span class="zh">SA的核心是「翻译」</span><span class="en">The SA's core skill is translation</span></div></div><div class="learning-val"><span class="zh">向客户翻译产品能力，向内部翻译客户需求。同一个子账号体系，换一种说法就是「帮你搞定算账问题」，客户的接受度完全不同。产品参数是工具，业务语言才是武器。</span><span class="en">Translate product capabilities for clients; translate client needs for the internal team. Sub-account system becomes "solves your billing headache." Product specs are tools; business language is the weapon.</span></div></div>
+    <div class="learning-row"><div class="learning-key"><div class="learning-num">Lesson 02</div><div class="learning-key-title"><span class="zh">商业诚信有时比技术更重要</span><span class="en">Commercial integrity beats features</span></div></div><div class="learning-val"><span class="zh">客户提出渠道保护诉求，本质是信任问题。通过明确的承诺机制赢得信任，这个「杀手锏」比任何功能演示都有力。B端售前里，安全感是一种真实的产品价值。</span><span class="en">The client's channel protection request was a trust problem. A clear commitment proved more powerful than any feature demo. In B2B presales, the sense of security is a genuine product value.</span></div></div>
+    <div class="learning-row"><div class="learning-key"><div class="learning-num">Lesson 03</div><div class="learning-key-title"><span class="zh">隐性知识显性化是杠杆</span><span class="en">Externalizing tacit knowledge is leverage</span></div></div><div class="learning-val"><span class="zh">一份主动产出的客户分析文档，价值远超执行会议纪要本身。把经验转化为方法论，把方法论写成文档，才能让单次项目的价值倍增——这是实习生能做的最高杠杆率的事。</span><span class="en">A self-initiated client analysis document multiplies the value of a single project far beyond the meeting notes. Converting experience into methodology, then writing it down — the highest-leverage action an intern can take.</span></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- QUOTE -->
+<section id="quote-section" style="max-width:920px;margin:0 auto;padding:88px 40px;">
+  <div class="quote-glow"></div>
+  <div class="quote-eyebrow"><span class="zh">一个关于方法论的认知</span><span class="en">A note on methodology</span></div>
+  <span class="quote-mark">"</span>
+  <p class="quote-text">
+    <span class="zh">真正的售前能力，不是把产品介绍背得滚瓜烂熟——而是能在<em>客户的语境</em>里，用他们的业务逻辑解释你的技术方案，让他们觉得这套东西是为他们量身定制的。</span>
+    <span class="en">Real presales ability isn't memorizing product specs — it's explaining your technical solution <em>in the client's own business language</em>, so they feel the architecture was designed specifically for them.</span>
+  </p>
+  <div class="quote-attr">SA Case Study · ISV Channel Solution · 2026.02</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="max-width:920px;margin:0 auto;padding:0 40px 96px;">
+  <div class="divider" style="max-width:100%;margin-bottom:64px;"></div>
+  <div class="section-label"><span class="zh">联系我</span><span class="en">Get in Touch</span></div>
+  <div class="contact-inner">
+    <div class="contact-left">
+      <h3><span class="zh">有想法？<br/>聊聊看。</span><span class="en">Have a project?<br/>Let's talk.</span></h3>
+      <p><span class="zh">如果你在关注AI应用的商业化落地、云方案架构设计或B端售前策略，欢迎交流。也欢迎探讨校招、实习机会和行业见解。</span><span class="en">If you're working on AIGC commercialization, cloud solution architecture, or B2B presales strategy — let's connect. Open to discussing campus recruiting, internship opportunities, and industry insights.</span></p>
+      <div class="contact-links">
+        <a class="contact-link" href="mailto:your@email.com">
+          <span class="cl-icon" style="background:var(--orange-dim);color:var(--orange);">✉</span>
+          <span><span class="zh">发邮件</span><span class="en">Send an email</span> →</span>
+        </a>
+        <a class="contact-link" href="#">
+          <span class="cl-icon" style="background:var(--blue-dim);color:var(--blue);">in</span>
+          <span>LinkedIn →</span>
+        </a>
+        <a class="contact-link" href="#">
+          <span class="cl-icon" style="background:var(--teal-dim);color:var(--teal);">微</span>
+          <span><span class="zh">微信</span><span class="en">WeChat</span> →</span>
+        </a>
+      </div>
+    </div>
+    <div class="contact-right">
+      <div class="contact-tag-title"><span class="zh">我关注的方向</span><span class="en">Areas I focus on</span></div>
+      <div class="contact-tags">
+        <span class="tag tag-orange"><span class="zh">解决方案架构</span><span class="en">Solution Architecture</span></span>
+        <span class="tag tag-orange"><span class="zh">B端售前</span><span class="en">B2B Presales</span></span>
+        <span class="tag tag-blue"><span class="zh">AIGC商业化</span><span class="en">AIGC Commercialization</span></span>
+        <span class="tag tag-blue"><span class="zh">产品化思维</span><span class="en">Product Thinking</span></span>
+        <span class="tag"><span class="zh">渠道策略</span><span class="en">Channel Strategy</span></span>
+        <span class="tag"><span class="zh">技术翻译</span><span class="en">Technical Translation</span></span>
+      </div>
+      <div class="contact-note"><span class="zh">本页面所有客户信息已脱敏处理，仅用于个人学习复盘与能力展示，不涉及任何商业机密。</span><span class="en">All client information on this page has been desensitized. This page is for personal learning and portfolio purposes only, with no commercial confidentiality concerns.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div><span class="zh">AI漫剧ISV渠道方案 · SA案例复盘 · 2026</span><span class="en">AI Drama ISV Channel · SA Case Study · 2026</span></div>
+  <div><span class="zh">客户信息已脱敏 · 仅供个人使用</span><span class="en">Desensitized · Personal use only</span></div>
+</footer>
+
+<script>
+// ── THEME / LANG ──────────────────────────────────────────
+function toggleTheme(){
+  const h=document.documentElement,dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  document.getElementById('theme-toggle').textContent=dark?'☾':'☀';
+  drawRadar();
+}
+function toggleLang(){
+  const h=document.documentElement,zh=h.getAttribute('data-lang')==='zh';
+  h.setAttribute('data-lang',zh?'en':'zh');
+  document.getElementById('lang-toggle').textContent=zh?'中':'EN';
+  drawRadar();
+}
+// ── REVEAL ───────────────────────────────────────────────
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.09});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── TIMELINE DRAG SCROLL ─────────────────────────────────
+const tlScroll=document.getElementById('tlScroll');
+let isDragging=false,startX=0,scrollLeft=0;
+tlScroll.addEventListener('mousedown',e=>{isDragging=true;startX=e.pageX-tlScroll.offsetLeft;scrollLeft=tlScroll.scrollLeft;tlScroll.style.userSelect='none';});
+document.addEventListener('mouseup',()=>{isDragging=false;tlScroll.style.userSelect='';});
+document.addEventListener('mousemove',e=>{if(!isDragging)return;const x=e.pageX-tlScroll.offsetLeft;tlScroll.scrollLeft=scrollLeft-(x-startX);});
+
+// ── ARCH TOOLTIP DATA ─────────────────────────────────────
+const nodeData={
+  platform:{badge:'CLIENT LAYER',title:{zh:'AI漫剧制作平台',en:'AIGC Drama Platform'},tech:{zh:'客户自研的AIGC工作流平台，集成剧本解析、资产管理、分镜生成、视频生成等全流程模块，通过统一API调用多个底层模型。',en:"The client's self-built AIGC workflow platform integrating script parsing, asset management, storyboard generation, and video production via a unified API."},biz:{zh:'方案的核心受益方。该平台需要稳定低价的上游API供应商，且需支持多级分发，既能自用也能为下游工作室提供SaaS服务。',en:"The core beneficiary. Needs stable low-cost upstream API access and must support multi-tier distribution — internal use plus SaaS delivery to downstream studios."}},
+  studio:{badge:'CLIENT LAYER',title:{zh:'下游创作工作室',en:'Downstream Studios'},tech:{zh:'中小型AI漫剧制作团队（通常3–5人），不具备直接调用模型API的技术能力，依赖SaaS平台进行内容生产，对并发稳定性要求极高。',en:'Small AI drama teams (3–5 people) without direct API capability — dependent on the SaaS platform, with high concurrency stability demands.'},biz:{zh:'拿下渠道商等于间接覆盖其所有下游工作室。子账号体系为每个工作室提供账单隔离与资源分配，是渠道商向下游提供的核心服务。',en:'Landing the reseller indirectly covers all downstream studios. Sub-accounts provide isolated billing and quota control — the reseller\'s core service offering downstream.'}},
+  dist:{badge:'CLIENT LAYER',title:{zh:'内容分发渠道',en:'Content Distribution'},tech:{zh:'漫剧内容制作完成后的下游分发路径，包括短视频平台和内容平台。分发效率直接影响投流ROI，是AIGC内容生产价值的最终验证场。',en:'Downstream distribution via short video and content platforms. Distribution efficiency directly impacts ad ROI — the ultimate validation of AIGC production value.'},biz:{zh:'智能集锦剪辑能力（自动生成投流素材）直接服务于这一层的ROI需求，是展示方案增值价值的重要切入点。',en:"Smart highlights generation directly serves this layer's ROI needs — an important wedge for demonstrating solution value-add beyond pure API resale."}},
+  api:{badge:'SOLUTION CORE · 方案核心',title:{zh:'多模型API聚合层',en:'Multi-model API Hub'},tech:{zh:'将视频生成（参考生/图生视频/首尾帧）、图片生成和文本大模型统一接入，提供标准化调用接口，并支持异步错峰生成模式（降低成本）。',en:'Unified access to video generation (reference/image-to-video/keyframe), image models, and text LLMs — standardized interface plus async off-peak generation for cost reduction.'},biz:{zh:'解决客户「多模型会员切换割裂」的核心痛点。五折批发价 vs 原厂八折直销，一套API接入全部模型能力。这是方案最核心的差异化优势。',en:"Solves the client's core pain of fragmented multi-model subscriptions. 5/10 wholesale vs vendor's 8/10 direct — one API unlocks all model capabilities. The solution's core differentiation."}},
+  iam:{badge:'SOLUTION CORE · 方案核心',title:{zh:'账号权限分发体系',en:'Account & IAM System'},tech:{zh:'基于IAM的主账号/子账号分级管控体系。主账号拥有全局视角，子账号继承主账号实名认证，每个子账号绑定独立API Key，账单统一归集至主账号结算。',en:'IAM-based master/sub-account hierarchy. Master account has full visibility; sub-accounts inherit master verification; each sub-account has an independent API Key; billing consolidated to master.'},biz:{zh:'这是本次方案设计的差异化核心。无需改造现有平台架构，即可实现对数百家下游工作室的账单隔离与权限控制。认证继承大幅降低下游准入门槛。',en:"The solution's differentiating core. No platform changes needed — billing isolation and permission control for hundreds of downstream studios. Identity inheritance dramatically lowers onboarding friction."}},
+  concur:{badge:'SOLUTION CORE · 关键卡点',title:{zh:'并发资源调度',en:'Concurrency Management'},tech:{zh:'通过并发资源池管理，为大客户提供30–50并发专属通道，为分发客群提供共享并发池（由渠道商自行分配）。支持优先级队列和限流策略。',en:'Managed concurrency pools — dedicated 30–50 req/min for key clients; shared pools for distribution clients (allocated by reseller). Priority queuing and rate limiting.'},biz:{zh:'这是整个合作的核心卡点。Vidu主体库并发限制导致多用户体验极差。专属高并发额度是合作成立的技术前提。实习结束时申请仍在推进中。',en:"The entire deal's critical blocker. Vidu's character library concurrency limits cause terrible multi-user experience. High-concurrency quota is the technical prerequisite. Still pending at internship end."}},
+  media:{badge:'VALUE-ADD · 增值能力',title:{zh:'智能媒体处理',en:'Smart Media Processing'},tech:{zh:'AI超清增强（感知编码，模拟人眼分配码率）、三种转码模式（极速/闲时/感知编码），以及智能集锦剪辑（自动识别高光片段生成投流素材）。',en:'AI super-resolution (perceptual encoding mimics human vision), three transcoding modes (express/off-peak/perceptual), and smart highlights generation (auto-extract clips for ad use).'},biz:{zh:'漫剧制作完成后，智能集锦自动生成适配短视频平台的投流素材，直接提升客户投流ROI。是超越单纯API转售竞争的增值维度。',en:'After production, smart highlights auto-generate ad-ready clips for short video platforms — directly improving ad ROI. The value-add dimension beyond pure API resale competition.'}},
+  compute:{badge:'INFRA LAYER',title:{zh:'模型算力基础设施',en:'Compute Infrastructure'},tech:{zh:'为AI模型推理提供算力支撑，包括GPU云服务器（高并行推理）和弹性高性能计算集群（RDMA网络）。配套并行文件系统（PFS）支持大规模AI训练。',en:'GPU cloud servers for parallel AI inference; elastic high-performance compute clusters with RDMA; parallel file systems (PFS) for large-scale AI training.'},biz:{zh:'稳定可靠的算力是整个方案的底座。对于漫剧制作场景，算力的弹性和稳定性直接决定了上层视频生成任务的并发上限和响应速度。',en:"Stable compute is the solution's foundation. Compute elasticity and reliability directly determine the concurrency ceiling and response speed of video generation tasks."}},
+  storage:{badge:'INFRA LAYER',title:{zh:'媒体存储与分发',en:'Storage & CDN'},tech:{zh:'对象存储提供海量视频/图片素材的可靠存储（智能分层：热数据高频，冷数据自动沉降降低成本）。CDN提供全球节点内容加速，保障首屏秒开体验。',en:'Object storage for massive video/image assets with intelligent tiering (hot data fast, cold data auto-migrated to cut costs). CDN global acceleration for sub-second first-frame loading.'},biz:{zh:'对于漫剧平台，随着内容资产积累，存储成本快速增长。智能降冷策略可显著降低长期TCO，是方案成本分析中的重要优化项。',en:'As drama content accumulates, storage costs grow rapidly. Smart cold tiering significantly reduces long-term TCO — an important optimization in the solution cost analysis.'}},
+  sec:{badge:'INFRA LAYER',title:{zh:'安全合规体系',en:'Security & Compliance'},tech:{zh:'涵盖内容安全审核（鉴黄/鉴政/暴恐自动审核）、版权保护（数字水印+视频加密）、IAM权限管控（API Key鉴权、子账号连带责任机制）。',en:'Content safety auditing (CSAM/political/violence auto-screening), copyright protection (digital watermarking + video encryption), IAM controls (API Key auth, sub-account joint liability).'},biz:{zh:'主账号对所有子账号行为负连带责任。建议渠道商为每个子账号配置资金预警阈值并接入内容审核API，将合规风险锁定在可控范围内。',en:"Master accounts bear joint liability for sub-account behavior. Recommend reseller configure fund alerts and content audit API per sub-account — both risk management and a value-add service downstream."}}
+};
+
+const archTooltip=document.getElementById('arch-tooltip');
+const archBody=document.querySelector('.arch-body');
+function getLang(){return document.documentElement.getAttribute('data-lang')||'zh';}
+
+document.querySelectorAll('.arch-node').forEach(node=>{
+  node.addEventListener('mouseenter',function(e){
+    const key=this.getAttribute('data-key'),d=nodeData[key];if(!d)return;
+    const lang=getLang();
+    document.getElementById('tt-badge').textContent=d.badge;
+    document.getElementById('tt-title').textContent=d.title[lang];
+    document.getElementById('tt-tech').textContent=d.tech[lang];
+    document.getElementById('tt-biz').textContent=d.biz[lang];
+    positionTooltip(e);
+    archTooltip.classList.add('vis');
+  });
+  node.addEventListener('mousemove',function(e){
+    if(archTooltip.classList.contains('vis')) positionTooltip(e);
+  });
+  node.addEventListener('mouseleave',()=>archTooltip.classList.remove('vis'));
+});
+
+function positionTooltip(e){
+  const tw=310, th=260;
+  let x=e.clientX+16, y=e.clientY+16;
+  if(x+tw>window.innerWidth-10) x=e.clientX-tw-12;
+  if(y+th>window.innerHeight-10) y=e.clientY-th-12;
+  if(x<8) x=8;
+  if(y<8) y=8;
+  archTooltip.style.left=x+'px';
+  archTooltip.style.top=y+'px';
+}
+
+// ── RADAR ────────────────────────────────────────────────
+const radarData=[
+  {zh:'业务理解',en:'Business',val:.85,color:'#E8520A',desc:{zh:'快速识别ISV渠道商的多层次需求（技术/商业/生态），将痛点精准映射到方案模块，体现于拜访前准备阶段的需求分析。',en:'Rapidly identified the ISV reseller\'s multi-layer needs (technical/commercial/ecosystem), mapping pain points to solution modules — evidenced in pre-visit demand analysis.'}},
+  {zh:'方案架构',en:'Architecture',val:.80,color:'#E8520A',desc:{zh:'理解并能清晰讲解主账号+子账号+API Key分发体系，以及该架构如何解决渠道商的核心业务问题，体现于技术细节补充和分析文档。',en:'Understood and articulated the master/sub-account+API Key distribution architecture and how it solves the reseller\'s core business problem — evidenced in technical clarifications and analysis doc.'}},
+  {zh:'客户沟通',en:'Communication',val:.75,color:'#2563EB',desc:{zh:'在现场技术细节讨论中能准确补充信息，并将技术概念转化为业务语言（如"并发=车道数"），体现于会议现场的技术补充时刻。',en:'Accurately supplemented technical information on-site and translated concepts into business language (e.g., "concurrency = highway lanes") — evidenced in on-site technical moments.'}},
+  {zh:'售前推进',en:'Execution',val:.88,color:'#2563EB',desc:{zh:'完整参与售前全链条（准备→拜访→纪要→文档→跟进），To Do完成率100%，展现了端到端的闭环意识。',en:'Completed the full presales cycle (prep→visit→notes→docs→follow-up), 100% action item completion rate — demonstrating end-to-end follow-through.'}},
+  {zh:'文档输出',en:'Documentation',val:.92,color:'#D97706',desc:{zh:'独立完成两版会议纪要（简版+详版）及一份超预期的客户深度分析文档，是本次项目中最突出的个人贡献。',en:'Independently authored two meeting summaries plus a beyond-scope client deep-dive — the most notable individual contribution in this project.'}},
+  {zh:'商业化思维',en:'Commercial',val:.78,color:'#D97706',desc:{zh:'理解ISV渠道商的「渠道裂变」价值逻辑，能从竞对迁移、账单体系、渠道保护等商业维度分析合作成立的前提，体现于内部分析文档的汇报框架。',en:'Understood the "channel multiplication" value logic of ISV resellers, analyzing partnership viability from competitive migration, billing architecture, and channel protection dimensions.'}},
+  {zh:'复盘能力',en:'Retrospective',val:.90,color:'#7C3AED',desc:{zh:'主动产出深度复盘文档，能清晰识别自身不足（关键卡点推进/现场发言/决策链）并给出可执行的改进方向，本页面即是复盘成果的体现。',en:'Self-initiated a deep retrospective document, clearly identifying specific gaps (critical blocker escalation / on-site contribution / stakeholder mapping) with actionable improvement directions.'}}
+];
+
+function buildLegend(){
+  const lang=getLang();
+  const lg=document.getElementById('radarLegend');
+  lg.innerHTML='';
+  radarData.forEach((d,i)=>{
+    const row=document.createElement('div');row.className='legend-row';row.dataset.idx=i;
+    row.innerHTML=`<div class="legend-dot" style="background:${d.color}"></div><span><strong>${d[lang]}</strong></span>`;
+    row.addEventListener('mouseenter',()=>showRadarTip(i,row));
+    row.addEventListener('mouseleave',hideRadarTip);
+    lg.appendChild(row);
+  });
+}
+
+const radarTip=document.getElementById('radarTip');
+function showRadarTip(i,el){
+  const d=radarData[i],lang=getLang();
+  document.getElementById('rtName').textContent=d[lang];
+  document.getElementById('rtVal').textContent=`${Math.round(d.val*100)}%`;
+  document.getElementById('rtDesc').textContent=d.desc[lang];
+  const rect=el.getBoundingClientRect();
+  radarTip.style.top=(rect.top - document.querySelector('.radar-canvas-wrap').getBoundingClientRect().top - 10)+'px';
+  radarTip.style.left='-210px';
+  radarTip.classList.add('vis');
+}
+function hideRadarTip(){radarTip.classList.remove('vis');}
+
+function drawRadar(){
+  const canvas=document.getElementById('radarCanvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  const lang=getLang();
+  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=W*.36;
+  ctx.clearRect(0,0,W,H);
+  const n=radarData.length;
+  const ang=i=>Math.PI*2*i/n-Math.PI/2;
+
+  // Grid
+  for(let r=1;r<=5;r++){
+    ctx.beginPath();
+    for(let i=0;i<n;i++){const a=ang(i),rd=R*r/5;i===0?ctx.moveTo(cx+rd*Math.cos(a),cy+rd*Math.sin(a)):ctx.lineTo(cx+rd*Math.cos(a),cy+rd*Math.sin(a));}
+    ctx.closePath();
+    ctx.strokeStyle=dark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';ctx.lineWidth=1;ctx.stroke();
+  }
+  for(let i=0;i<n;i++){
+    const a=ang(i);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));
+    ctx.strokeStyle=dark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';ctx.lineWidth=1;ctx.stroke();
+  }
+  // Fill
+  ctx.beginPath();
+  for(let i=0;i<n;i++){const a=ang(i),r=R*radarData[i].val;i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+  ctx.closePath();
+  ctx.fillStyle=dark?'rgba(232,82,10,.12)':'rgba(232,82,10,.1)';ctx.fill();
+  ctx.strokeStyle=dark?'rgba(232,82,10,.55)':'rgba(232,82,10,.5)';ctx.lineWidth=1.5;ctx.stroke();
+  // Dots
+  for(let i=0;i<n;i++){
+    const a=ang(i),r=R*radarData[i].val;
+    ctx.beginPath();ctx.arc(cx+r*Math.cos(a),cy+r*Math.sin(a),5,0,Math.PI*2);
+    ctx.fillStyle=radarData[i].color;ctx.fill();
+    ctx.strokeStyle=dark?'#100F0D':'#FAF8F4';ctx.lineWidth=2;ctx.stroke();
+  }
+  // Labels
+  ctx.font=`400 12px 'DM Sans',sans-serif`;
+  for(let i=0;i<n;i++){
+    const a=ang(i),r=R+26;const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    ctx.textAlign=Math.abs(Math.cos(a))<.15?'center':Math.cos(a)>0?'left':'right';
+    ctx.textBaseline=Math.abs(Math.sin(a))<.15?'middle':Math.sin(a)>0?'top':'bottom';
+    ctx.fillStyle=dark?'#F0EDE8':'#1A1816';ctx.fillText(radarData[i][lang],x,y);
+  }
+  // Canvas hover
+  canvas.onmousemove=function(e){
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(W/rect.width),my=(e.clientY-rect.top)*(H/rect.height);
+    let found=-1;
+    for(let i=0;i<n;i++){
+      const a=ang(i),r=R*radarData[i].val;
+      const px=cx+r*Math.cos(a),py=cy+r*Math.sin(a);
+      if(Math.hypot(mx-px,my-py)<14){found=i;break;}
+    }
+    if(found>=0){
+      const d=radarData[found];
+      document.getElementById('rtName').textContent=d[lang];
+      document.getElementById('rtVal').textContent=`${Math.round(d.val*100)}%`;
+      document.getElementById('rtDesc').textContent=d.desc[lang];
+      const cwRect=document.querySelector('.radar-canvas-wrap').getBoundingClientRect();
+      let tx=e.clientX-cwRect.left+16,ty=e.clientY-cwRect.top-40;
+      if(tx+210>cwRect.width)tx=e.clientX-cwRect.left-226;
+      radarTip.style.left=tx+'px';radarTip.style.top=ty+'px';
+      radarTip.classList.add('vis');
+    } else {
+      radarTip.classList.remove('vis');
+    }
+  };
+  canvas.onmouseleave=()=>radarTip.classList.remove('vis');
+}
+
+window.addEventListener('load',()=>{buildLegend();drawRadar();});
+window.addEventListener('resize',drawRadar);
+</script>
+</body>
+</html>
